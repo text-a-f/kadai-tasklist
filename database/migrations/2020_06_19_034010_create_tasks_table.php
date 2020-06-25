@@ -15,12 +15,8 @@ class CreateTasksTable extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->increments('id');
-            $table->bigInteger('user_id')->unsigned()->index();
             $table->string('content');
             $table->timestamps();
-
-            // 外部キー制約
-            $table->foreign('Task_id')->references('id')->on('tasks');
         });
 
     }

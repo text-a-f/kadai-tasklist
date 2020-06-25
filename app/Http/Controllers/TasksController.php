@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Task;
+use Illuminate\Support\Facades\Auth;
 
 class TasksController extends Controller
 {
@@ -14,13 +15,21 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $tasks = Task::all();
+        if (\Auth::check()) {
+            $data = [];
+            $user = \Auth::user();  //ログインしているユーザー情報
+            $tasks = $user->tasks()->orderBy('created_at')->paginate(10);
+            $data = [
+                'user' => $user,
+                'tasks' => $tasks,
+            ];
 
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
-
+            return view('tasks.index', $data);
+        } else {
+            return view('welcome');
+        }
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -29,11 +38,14 @@ class TasksController extends Controller
      */
     public function create()
     {
-        $task = new Task;
+        if (\Auth::check()) {
+            $task = new Task;
 
-        return view('tasks.create', [
-            'tasks' => $task,
-        ]);
+            return view('tasks.create', [
+                'tasks' => $task,]);
+        } else {
+            return redirect('/');
+        }
 
     }
 
@@ -45,18 +57,19 @@ class TasksController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'status' => 'required|max:10',   // 追加
-        ]);
+        if (\Auth::check()) {
+        //     $this->validate($request, [
+        //         'status' => 'required|max:10',   // 追加
+        // ]);
 
-        $task = new Task;
-        $task->status = $request->status;   // 追加
-        $task->content = $request->content;
-        $task->save();
-
-        return redirect('/');
-
-    }
+            $task = new Task;
+            $task->status = $request->status;   // 追加
+            $task->content = $request->content;
+            $task->user_id = \Auth::id();
+            $task->save();
+        }
+            return redirect('/');
+   }
 
     /**
      * Display the specified resource.
@@ -67,11 +80,14 @@ class TasksController extends Controller
     public function show($id)
     {
         $task = Task::find($id);
+        if (\Auth::check() && \Auth::id() === $task->user_id) {
 
-        return view('tasks.show', [
-            'task' => $task,
+            return view('tasks.show', [
+                'task' => $task,
         ]);
-
+        } else {
+            return redirect('/');
+        }
     }
 
     /**
@@ -83,10 +99,13 @@ class TasksController extends Controller
     public function edit($id)
     {
         $task = Task::find($id);
+        if (\Auth::check() && \Auth::id() === $task->user_id) {
+            $task->user_id = \Auth::id();
 
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+            return view('tasks.edit', [
+                'task' => $task,]);
+        }
+            return redirect('/');
     }
 
     /**
@@ -101,15 +120,14 @@ class TasksController extends Controller
         $this->validate($request, [
             'status' => 'required|max:10',   // 追加,
         ]);
-
-        $task = Task::find($id);
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
-
-        return redirect('/');
-
-
+        if (\Auth::check()) {
+            $task = Task::find($id);
+            $task->status = $request->status;
+            $task->content = $request->content;
+            $task->user_id = \Auth::id();
+            $task->save();
+        }
+            return redirect('/');
     }
 
     /**
@@ -120,10 +138,11 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        $task = Task::find($id);
-        $task->delete();
-
-        return redirect('/');
-
+        if (Auth::check()) {
+            $task = Task::find($id);
+            $task->user_id = \Auth::id();
+            $task->delete();
+        }
+            return redirect('/');
     }
 }

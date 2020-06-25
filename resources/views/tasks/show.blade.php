@@ -20,5 +20,6 @@
     {!! Form::model($task, ['route' => ['Tasks.destroy', $task->id], 'method' => 'delete']) !!}
         {!! Form::submit('削除', ['class' => 'btn btn-danger']) !!}
     {!! Form::close() !!}
-
 @endsection
+
+
