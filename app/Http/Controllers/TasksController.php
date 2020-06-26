@@ -120,8 +120,8 @@ class TasksController extends Controller
         $this->validate($request, [
             'status' => 'required|max:10',   // 追加,
         ]);
-        if (\Auth::check()) {
-            $task = Task::find($id);
+        $task = Task::find($id);
+        if (\Auth::check() && \Auth::id() === $task->user_id) {
             $task->status = $request->status;
             $task->content = $request->content;
             $task->user_id = \Auth::id();
@@ -138,8 +138,8 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        if (Auth::check()) {
-            $task = Task::find($id);
+        $task = Task::find($id);
+        if (Auth::check() && \Auth::id() === $task->user_id) {
             $task->user_id = \Auth::id();
             $task->delete();
         }

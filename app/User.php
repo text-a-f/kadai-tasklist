@@ -31,7 +31,7 @@ class User extends Authenticatable
 
     public function tasks()
     {
-        return $this->hasMany(Task::class);　//hasMany：1体多を簡単にしてくれる
+        return $this->hasMany(Task::class);
     }
 
 
